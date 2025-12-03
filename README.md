@@ -1,1 +1,3 @@
-https://github.com/h98775473-crypto/index　用のプロキシサーバーです
+下記用のプロキシサーバーのソース
+https://github.com/h98775473-crypto/index
+https://server-gtul.onrender.comで公開中
