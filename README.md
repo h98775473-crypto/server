@@ -1,3 +1,4 @@
 下記用のプロキシサーバーのソース
 https://github.com/h98775473-crypto/index
-https://server-gtul.onrender.comで公開中
+https://server-gtul.onrender.com
+で公開中
