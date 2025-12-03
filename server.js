@@ -9,15 +9,20 @@ app.use(cors());
 
 // CiNii OpenSearch APIへのプロキシエンドポイント 要は本探しAPI用URL処理
 
-app.get("/cinii-proxy/opensearch/all",async(req,res) => {
+app.get("/cinii-proxy/opensearch/all", async (req, res) => {
     const ciniiApiBaseDomain = 'https://cir.nii.ac.jp/opensearch/all';
 
-    // クエリパラメータをそのまま取得
+
+    const APP_ID = process.env.CINII_APP_ID;
+
+    if (!APP_ID) {
+        console.error("CINII_APP_ID environment variable is not set.");
+        return res.status(500).json({ error: 'Server configuration error: Missing API Key.' });
+    }
+
     const queryParams = new URLSearchParams(req.query);
 
-    const apiUrl = `${ciniiApiBaseDomain}?appid=lkCMwUK6QCKUCW6yJoC8&${queryParams.toString()}`;
-
-    //console.log(`Proxying request to: ${apiUrl}`);
+    const apiUrl = `${ciniiApiBaseDomain}?appid=${APP_ID}&${queryParams.toString()}`;
 
     try {
         const response = await fetch(apiUrl);
@@ -40,37 +45,30 @@ app.get("/cinii-proxy/opensearch/all",async(req,res) => {
 
 // CiNii OpenSearch APIへのプロキシエンドポイント 要は著者探しAPI用URL処理
 
-app.get("/cinii-proxy/opensearch/author",async(req,res) => {
-    
+app.get("/cinii-proxy/opensearch/author", async (req, res) => {
 
-    //const ciniiApiBaseDomain = 'https://cir.nii.ac.jp/opensearch/author';
+
 
     const ciniiApiBaseDomain = `https://cir.nii.ac.jp/crid/`;
 
-    // クエリパラメータをそのまま取得
-    //const queryParams = new URLSearchParams(req.query);
 
     const queryParams = req.query.q;
 
-    //const apiUrl = `${ciniiApiBaseDomain}?${queryParams.toString()}`;
     let apiUrl = `${ciniiApiBaseDomain}${queryParams}.json`;
 
-    //console.log(`Proxying request to: ${apiUrl}`);
 
     try {
         let response = await (await fetch(apiUrl)).json();
         let temp = response;
         let data = "";
 
-        try{
-            for (let i=0;i<Object.keys(response["creator"]).length;i++){
-                apiUrl=`${response["creator"][i]["@id"]}.json`
-                //console.log("Proxying request to: "+apiUrl);
-                temp = await(await fetch(apiUrl)).json();
-                data += temp["career"][0]["institution"]["notation"][0]["@value"]+"//";
+        try {
+            for (let i = 0; i < Object.keys(response["creator"]).length; i++) {
+                apiUrl = `${response["creator"][i]["@id"]}.json`
+                temp = await (await fetch(apiUrl)).json();
+                data += temp["career"][0]["institution"]["notation"][0]["@value"] + "//";
             }
-        } catch(error) {
-            //console.log("not found");
+        } catch (error) {
         }
 
         response = data.split("//");
@@ -79,12 +77,11 @@ app.get("/cinii-proxy/opensearch/author",async(req,res) => {
 
     } catch (error) {
         console.error('Error proxying request to CiNii Articles API:', error);
-        //res.status(500).json({ error: 'Failed to fetch data from CiNii Articles API', details: error.message });
     }
 });
 
 
 // サーバーの起動
 app.listen(PORT, () => {
-	console.log(PORT);
+    console.log(PORT);
 });
