@@ -84,4 +84,5 @@ app.get("/cinii-proxy/opensearch/author", async (req, res) => {
 // サーバーの起動
 app.listen(PORT, () => {
     console.log(PORT);
+    console.log(window.location.href);
 });
